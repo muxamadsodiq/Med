@@ -36,7 +36,15 @@ TELEGRAM_BOT_TOKEN: str = _required("TELEGRAM_BOT_TOKEN")
 TELEGRAM_CHANNEL_ID: str = _required("TELEGRAM_CHANNEL_ID")
 
 # ── Watchlist ─────────────────────────────────────────────────────────────────
-_raw_watchlist = os.getenv("WATCHLIST", "BTC-USD,ETH-USD,BNB-USD,SOL-USD,XRP-USD")
+# Defaults include major US stocks and leading crypto pairs so the bot monitors
+# both markets out of the box.  Override via the WATCHLIST env var.
+_DEFAULT_WATCHLIST = (
+    # US stocks
+    "AAPL,TSLA,MSFT,NVDA,AMZN,GOOGL,META,SPY,"
+    # Crypto
+    "BTC-USD,ETH-USD"
+)
+_raw_watchlist = os.getenv("WATCHLIST", _DEFAULT_WATCHLIST)
 WATCHLIST: list[str] = [t.strip() for t in _raw_watchlist.split(",") if t.strip()]
 
 # ── Scheduler ─────────────────────────────────────────────────────────────────

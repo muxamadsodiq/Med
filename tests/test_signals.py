@@ -6,26 +6,13 @@ yfinance.download is patched with synthetic OHLCV DataFrames.
 """
 from __future__ import annotations
 
-import types
 import unittest
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 
-# Minimal stubs so that config does not raise RuntimeError when env vars are absent
-import sys
-
-_fake_config = types.ModuleType("config")
-_fake_config.HISTORY_PERIOD = "90d"
-_fake_config.CANDLE_INTERVAL = "1h"
-_fake_config.RSI_OVERSOLD = 30.0
-_fake_config.RSI_OVERBOUGHT = 70.0
-_fake_config.MIN_SIGNAL_STRENGTH = 0.6
-_fake_config.WATCHLIST = ["BTC-USD", "ETH-USD"]
-sys.modules["config"] = _fake_config
-
-from signals import Signal, SignalType, _analyse, _fetch_ohlcv, get_trending_signals  # noqa: E402
+from signals import Signal, SignalType, _analyse, _fetch_ohlcv, get_trending_signals
 
 
 # ── Helpers ───────────────────────────────────────────────────────────────────
