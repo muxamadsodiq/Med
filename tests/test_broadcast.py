@@ -6,6 +6,7 @@ All Telegram API calls and signal fetching are mocked.
 from __future__ import annotations
 
 import asyncio
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import AsyncMock, MagicMock, patch
@@ -16,6 +17,12 @@ from subscribers import SubscriberStore
 
 def _run(coro):
     return asyncio.run(coro)
+
+
+def _tmp_path() -> Path:
+    """Return a secure temporary file path (file is created then closed immediately)."""
+    with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
+        return Path(f.name)
 
 
 class TestBroadcastSignals(unittest.TestCase):
@@ -33,8 +40,7 @@ class TestBroadcastSignals(unittest.TestCase):
         return SubscriberStore(path=tmp_path)
 
     def test_no_signals_sends_nothing(self):
-        import tempfile
-        tmp = Path(tempfile.mktemp(suffix=".json"))
+        tmp = _tmp_path()
         store = self._patch_store([111], tmp)
 
         with patch("main.get_trending_signals", return_value=[]), \
@@ -45,8 +51,7 @@ class TestBroadcastSignals(unittest.TestCase):
             app.bot.send_message.assert_not_called()
 
     def test_buy_signal_dmed_to_subscribers(self):
-        import tempfile
-        tmp = Path(tempfile.mktemp(suffix=".json"))
+        tmp = _tmp_path()
         store = self._patch_store([111, 222], tmp)
 
         buy = Signal("AAPL", SignalType.BUY, 0.85, 175.0, ["RSI oversold"])
@@ -63,8 +68,7 @@ class TestBroadcastSignals(unittest.TestCase):
         self.assertIn(222, dm_chats)
 
     def test_sell_signal_not_dmed_to_subscribers(self):
-        import tempfile
-        tmp = Path(tempfile.mktemp(suffix=".json"))
+        tmp = _tmp_path()
         store = self._patch_store([111], tmp)
 
         sell = Signal("TSLA", SignalType.SELL, 0.80, 200.0, ["RSI overbought"])
@@ -82,9 +86,8 @@ class TestBroadcastSignals(unittest.TestCase):
         self.assertIn("@test_channel", dm_chats)
 
     def test_blocked_user_removed_from_store(self):
-        import tempfile
         from telegram.error import Forbidden
-        tmp = Path(tempfile.mktemp(suffix=".json"))
+        tmp = _tmp_path()
         store = self._patch_store([111], tmp)
 
         buy = Signal("AAPL", SignalType.BUY, 0.85, 175.0, ["RSI oversold"])

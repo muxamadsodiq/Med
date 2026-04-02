@@ -13,7 +13,8 @@ from subscribers import SubscriberStore
 
 class TestSubscriberStore(unittest.TestCase):
     def _store(self) -> tuple[SubscriberStore, Path]:
-        tmp = Path(tempfile.mktemp(suffix=".json"))
+        with tempfile.NamedTemporaryFile(suffix=".json", delete=False) as f:
+            tmp = Path(f.name)
         return SubscriberStore(path=tmp), tmp
 
     # ── add / remove ──────────────────────────────────────────────────────────
